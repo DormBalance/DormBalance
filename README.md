@@ -99,13 +99,15 @@ The system supports multiple households, role-based access, recurring bills, and
 ## 🛠️ Tech Stack
 *(subject to change as development progresses)*
 
-- **Frontend:** React + TypeScript  
-- **Backend:** Node.js (Express/NestJS)  
-- **Database:** PostgreSQL  
-- **ORM:** Prisma  
-- **Authentication:** JWT + bcrypt  
-- **DevOps:** Docker & Docker Compose  
-- **Version Control:** GitHub with branch protections  
+- **Frontend:** React + TypeScript (Next.js)
+- **Backend:** Node.js (Next.js)
+  - **Application Hosting:** Vercel
+- **Database:** PostgreSQL
+  - **Database Hosting:** Supabase
+- **ORM:** Prisma
+- **Authentication:** Supabase Auth
+- **DevOps:** Docker (Local system)
+- **Version Control:** GitHub with branch protections
 
 ---
 
