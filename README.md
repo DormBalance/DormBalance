@@ -1,10 +1,10 @@
-# 🏠 DormBalance  
+# 🏠 FairShare  
 *A shared expense & budgeting platform for college roommates*
 
 ---
 
 ## 📌 Overview
-DormBalance is a web-based application designed specifically for **college students living with roommates** who want a simple, transparent way to track shared and personal expenses.
+FairShare is a web-based application designed specifically for **college students living with roommates** who want a simple, transparent way to track shared and personal expenses.
 
 Unlike generic budgeting apps, DormBalance focuses on **household-level expense sharing**, allowing roommates to split bills (rent, groceries, utilities), see exactly **who owes who**, and record settle-up payments—all in one place.
 
@@ -97,7 +97,6 @@ The system supports multiple households, role-based access, recurring bills, and
 ---
 
 ## 🛠️ Tech Stack
-*(subject to change as development progresses)*
 
 - **Frontend:** React + TypeScript (Next.js)
 - **Backend:** Node.js (Next.js)
@@ -130,21 +129,9 @@ Typical setup will include:
 
 ---
 
-## 📚 Course Context
-This project is developed for **CEN3031 – Introduction to Software Engineering**  
-Spring 2026, Section 16944
-
-The system satisfies course requirements by implementing:
-- User authentication with multiple roles
-- A dynamic database of user and item data
-- Frontend–backend–database communication
-- Collaborative development with configuration and project management tools
-
----
-
 ## 👨‍💻 Team
-Developed collaboratively by a student team at the University of Florida.
+Guillermo Novillo, Anthony Johnson, Gabriel Lopez-Garcia, Zachary Suero
 
 ---
 
-*DormBalance – because roommates shouldn’t have to argue over Venmo screenshots.*
+*FairShare – because roommates shouldn’t have to argue over Venmo screenshots.*
