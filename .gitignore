@@ -24,6 +24,10 @@ hs_err_pid*
 replay_pid*
 
 *.env
+.next
 
 prisma/generated
-node_modules/
+node_modules
+.next
+.DS_Store
+next-env.d.ts

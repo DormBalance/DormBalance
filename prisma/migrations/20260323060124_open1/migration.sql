@@ -1,15 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `admin_id` on the `households` table. All the data in the column will be lost.
-  - You are about to drop the column `household_id` on the `users` table. All the data in the column will be lost.
-  - You are about to drop the `financials` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[invite_code]` on the table `households` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `invite_code` to the `households` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updated_at` to the `households` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updated_at` to the `users` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "HouseholdRole" AS ENUM ('Admin', 'Member');
 
@@ -19,30 +7,29 @@ CREATE TYPE "RecurringExpenseFrequency" AS ENUM ('Weekly', 'Monthly');
 -- CreateEnum
 CREATE TYPE "SplitType" AS ENUM ('Equal', 'Custom');
 
--- DropForeignKey
-ALTER TABLE "financials" DROP CONSTRAINT "financials_household_id_fkey";
+-- CreateTable
+CREATE TABLE "households" (
+    "id" BIGSERIAL NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "name" TEXT DEFAULT 'Your Household',
+    "invite_code" TEXT NOT NULL,
+    "description" TEXT,
 
--- DropForeignKey
-ALTER TABLE "financials" DROP CONSTRAINT "financials_user_id_fkey";
+    CONSTRAINT "households_pkey" PRIMARY KEY ("id")
+);
 
--- DropForeignKey
-ALTER TABLE "households" DROP CONSTRAINT "households_admin_id_fkey";
+-- CreateTable
+CREATE TABLE "users" (
+    "id" BIGSERIAL NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "first_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
 
--- DropForeignKey
-ALTER TABLE "users" DROP CONSTRAINT "users_household_id_fkey";
-
--- AlterTable
-ALTER TABLE "households" DROP COLUMN "admin_id",
-ADD COLUMN     "description" TEXT,
-ADD COLUMN     "invite_code" TEXT NOT NULL,
-ADD COLUMN     "updated_at" TIMESTAMP(3) NOT NULL;
-
--- AlterTable
-ALTER TABLE "users" DROP COLUMN "household_id",
-ADD COLUMN     "updated_at" TIMESTAMP(3) NOT NULL;
-
--- DropTable
-DROP TABLE "financials";
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "expenses" (
@@ -130,6 +117,15 @@ CREATE TABLE "expense_splits" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "households_invite_code_key" ON "households"("invite_code");
+
+-- CreateIndex
+CREATE INDEX "households_invite_code_idx" ON "households"("invite_code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
 CREATE INDEX "expenses_payer_user_id_idx" ON "expenses"("payer_user_id");
 
 -- CreateIndex
@@ -185,12 +181,6 @@ CREATE INDEX "expense_splits_expense_id_idx" ON "expense_splits"("expense_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "expense_splits_expense_id_user_id_key" ON "expense_splits"("expense_id", "user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "households_invite_code_key" ON "households"("invite_code");
-
--- CreateIndex
-CREATE INDEX "households_invite_code_idx" ON "households"("invite_code");
 
 -- AddForeignKey
 ALTER TABLE "expenses" ADD CONSTRAINT "expenses_expense_category_id_fkey" FOREIGN KEY ("expense_category_id") REFERENCES "expense_categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;

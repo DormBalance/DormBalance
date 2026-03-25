@@ -1,6 +1,6 @@
 require('dotenv/config');
-const { PrismaPg } = require('@prisma/adapter-pg');
-const { PrismaClient } = require('../../prisma/generated');
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
 async function testDBConnection() {
   const prisma = new PrismaClient({

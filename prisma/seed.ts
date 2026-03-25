@@ -17,7 +17,34 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+async function applyOpenRLSPolicies() {
+  const TABLE_NAMES = [
+    "households", "users", "household_members", "expense_categories", 
+    "expenses", "expense_splits", "recurring_expenses", "settlements"
+  ];
+
+
+  for (const table of TABLE_NAMES) {
+    await prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY;`);
+ 
+    await prisma.$executeRawUnsafe(`DROP POLICY IF EXISTS "open_policy" ON "${table}";`);
+ 
+    await prisma.$executeRawUnsafe(`
+      CREATE POLICY "open_policy"
+      ON "${table}"
+      AS PERMISSIVE
+      FOR ALL
+      TO PUBLIC
+      USING (true)
+      WITH CHECK (true);
+    `);
+  }
+}
+
+
 async function main() {
+
+  await applyOpenRLSPolicies();
   
   await prisma.expense_splits.deleteMany();
   await prisma.settlements.deleteMany();
