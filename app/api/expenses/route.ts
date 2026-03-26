@@ -33,6 +33,7 @@ interface CreateExpenseBody {
   }[];
 }
 
+
 export async function POST(request: NextRequest) {
   let body: CreateExpenseBody;
 
@@ -259,8 +260,6 @@ export async function POST(request: NextRequest) {
   );
 
   }
-
-    
     catch (err) {
     console.error(`Error creating expense ${expense_name}: `, err);
     return NextResponse.json({error: "We encountered an error while creating the expense"}, {status: 500});
@@ -268,4 +267,160 @@ export async function POST(request: NextRequest) {
 }
 
 
+export async function GET(request: NextRequest) {
+  const searchParameters = request.nextUrl.searchParams;
+  const household_id = searchParameters.get("household_id");
+  const max_amount = searchParameters.get("max_amount");
+  const min_amount = searchParameters.get("min_amount");
+  const start_date = searchParameters.get("start_date");
+  const end_date = searchParameters.get("end_date");
+  const expense_category = searchParameters.get("expense_category_id");
+
+  if (!household_id){ //similar to post
+    return NextResponse.json({error: "household_id is required"}, {status: 400});
+  }
+
+  let householdID;
+  try{
+    householdID = BigInt(household_id);
+  }
+  catch{
+    return NextResponse.json({error: "not a valid houseghold"}, {status: 400})
+  }
+
+  let startDate = null;
+  let endDate = null;
+
+  if(start_date !== null && start_date !== undefined){ //sets of duplicates, second is a copy of the first for all below
+    startDate = new Date(start_date);
+    if(startDate.toString() === "Invalid Date"){
+      return NextResponse.json(
+        {error: "not a valid start date"},
+        {status: 400});
+    }
+  }
+
+   if(end_date !== null && end_date !== undefined){
+    endDate = new Date(end_date);
+    if(endDate.toString() === "Invalid Date"){
+      return NextResponse.json(
+        {error: "not a valid end date"},
+        {status: 400});
+    }
+  }
+
+  let min = null;
+  let max = null;
+
+  if(min_amount !== null && min_amount !== undefined){
+    const minNum = Number(min_amount);
+    if(isNaN(minNum) || minNum < 0){
+      return NextResponse.json(
+        {error: "not a valid min amount"},
+        {status: 400});
+    }
+    min = minNum
+  }
+
+   if(max_amount !== null && max_amount !== undefined){
+    const maxNum = Number(max_amount);
+    if(isNaN(maxNum) || maxNum < 0){
+      return NextResponse.json(
+        {error: "not a valid max amount"},
+        {status: 400});
+    }
+    max = maxNum
+  }
+
+  if(min !== null && max !== null && min > max){
+     return NextResponse.json(
+        {error: "min cant be bigger than max"},
+        {status: 400});
+  }
+
+  let expenseCategory = null;
+  if(expense_category != null){
+    try{
+      expenseCategory = BigInt(expense_category);
+    }
+    catch{
+      return NextResponse.json({error: "category non existing"}, {status: 400})
+    }
+  }
+
+  try{
+    let queryFilter: any = {
+      household_id: householdID,
+    };
+
+    if(expenseCategory != null){
+      queryFilter.expense_category_id = expenseCategory;
+    }
+    if(min != null || max != null){
+      queryFilter.amount = {};
+    }
+    if(max != null){
+      queryFilter.amount.lte = max;
+    }
+    if(min != null){
+      queryFilter.amount.gte = min;
+    }
+
+    if(startDate != null || endDate != null){
+      queryFilter.expense_date = {};
+      if(startDate != null){
+        queryFilter.expense_date.gte = startDate;
+      }
+      if(endDate != null){
+        queryFilter.expense_date.lte = endDate;
+      }
+    }
   
+  const outcome = await prisma.expenses.findMany({ //aided by copilot
+    where: queryFilter,
+    include: {
+      expense_category: true,
+      expense_creator: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+      expense_payer: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+      splits: {
+        select: {
+          id: true,
+          user_id: true,
+          amount_to_pay: true,
+          opted_out: true,
+        },
+      },
+    },
+    orderBy: {
+      expense_date: 'desc',
+    },
+  });
+
+  return NextResponse.json( //coppied from post function
+    {success: true, expenses: JSONifyBigInt(outcome)},
+    {status: 200}
+  );
+}
+
+
+catch (err) {
+    console.error("Error getting expense", err);
+    return NextResponse.json({error: "We encountered an error while creating the expense"}, {status: 500});
+  };
+}
+
+
+
+
