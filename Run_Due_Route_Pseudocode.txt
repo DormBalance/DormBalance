@@ -1,0 +1,318 @@
+================================================================================
+  PSEUDOCODE TEMPLATE: app/api/recurring_expenses/run-due/route.ts
+  Read this top to bottom. Each block maps to one section of the real file.
+  This route has ONE handler: POST. No GET.
+================================================================================
+
+
+--- IMPORTS (top of file) ---
+
+Import NextRequest and NextResponse from 'next/server'
+
+Import PrismaClient, SplitType, and RecurringExpenseFrequency from '@prisma/client'
+    SplitType is needed because when you create an expense, you must set split_type
+    RecurringExpenseFrequency is needed for the addFrequency helper
+    [look up: Prisma enums]
+
+Import PrismaPg from '@prisma/adapter-pg'
+
+Import JSONifyBigInt from '../../../../utilities/BigInt'
+    NOTE: four levels deep (run-due is nested one extra folder)
+    [look up: relative imports in Node.js]
+
+Import CalculateEqualSplit from '../../expenses/split'
+    This is the existing split helper your teammate wrote
+    It takes an amount + list of user IDs and returns rows with cents-safe amounts
+    [look up: named exports/imports in JavaScript]
+
+
+--- DATABASE CLIENT SETUP ---
+
+Create a PrismaPg adapter using process.env.DATABASE_URL
+Create a PrismaClient using that adapter
+    (same as every other route)
+
+
+--- HELPER FUNCTION: addFrequency ---
+
+Purpose: given a date and a frequency (Weekly or Monthly), return a new date
+         that is one period into the future.
+
+function addFrequency(date: Date, frequency: RecurringExpenseFrequency): Date
+
+    Pseudocode:
+        create a copy of the date     (const next = new Date(date))
+            [look up: copying Date objects in JavaScript]
+
+        if frequency is Weekly
+            add 7 days to the copy     (next.setDate(next.getDate() + 7))
+            [look up: Date.setDate(), Date.getDate()]
+
+        else (Monthly)
+            add 1 month to the copy    (next.setMonth(next.getMonth() + 1))
+            [look up: Date.setMonth(), Date.getMonth()]
+
+        return the copy
+
+    Why copy? If you modify the original date, it changes the bill's
+    next_expense_date object in memory before you've finished using it.
+
+
+================================================================================
+  POST HANDLER  -  export async function POST(_request: NextRequest)
+================================================================================
+
+  NOTE: the parameter is _request (underscore prefix) because this handler
+  does NOT read any body or query params. The underscore tells TypeScript
+  you're intentionally not using it. [look up: unused parameters in TypeScript]
+
+
+STEP 1: Capture current time
+
+    const now = new Date()
+
+    This is the cutoff — any recurring expense with next_expense_date <= now
+    is considered "due" and should generate an expense.
+
+
+STEP 2: Wrap everything in a try/catch
+
+    The outer try/catch handles any unexpected error from steps 3-5.
+    On catch: console.error the error, return 500.
+
+
+STEP 3: Find all due recurring expenses
+
+    Query the database OUTSIDE the transaction (read-only, no risk):
+
+        prisma.recurring_expenses.findMany
+            where:
+                is_active: true
+                next_expense_date: { lte: now }
+                    lte means "less than or equal to"
+                    [look up: Prisma filter operators (lte, gte, lt, gt)]
+            include:
+                household:
+                    include:
+                        members: { select: { user_id: true } }
+                            "members" is the relation name on the households model
+                            in schema.prisma. NOT "household_members".
+                            [look up: Prisma nested includes]
+
+    Store the result as "dueBills" (an array)
+    Store dueBills.length as "due_count" (used in the response later)
+
+    WHY include household.members?
+        Because for each bill you need the list of all household members
+        to split the expense equally among them using CalculateEqualSplit.
+
+
+STEP 4: Run everything inside a transaction
+
+    const result = await prisma.$transaction(async (tx) => { ... })
+
+    [look up: Prisma interactive transactions, prisma.$transaction]
+
+    WHY a transaction?
+        If you create 3 expenses but the 4th fails, the transaction rolls
+        back ALL of them. No partial writes. This is a task requirement.
+
+    Inside the transaction callback, use "tx" instead of "prisma" for all
+    database operations. "tx" is the transactional client.
+
+
+    --- INSIDE THE TRANSACTION ---
+
+    4a. Set up counters and a details array
+
+        let created_count = 0
+        let skipped_count = 0
+        const details = []
+            details will hold one object per due bill, recording what happened
+
+    4b. Loop over each due bill
+
+        for (const bill of dueBills) { ... }
+        [look up: for...of loops in JavaScript]
+
+        For each bill, do steps 4c through 4h:
+
+
+    4c. IDEMPOTENCY CHECK — has this bill already been processed?
+
+        Query:
+            tx.expenses.findFirst
+                where:
+                    recurring_expense_id: bill.id
+                    expense_date: bill.next_expense_date
+
+        If a matching expense already exists:
+            skipped_count++
+            push { recurring_expense_id: bill.id.toString(), status: 'skipped' }
+                into the details array
+            continue (skip to the next bill in the loop)
+            [look up: continue statement in JavaScript]
+
+        WHY?
+            If someone hits the run-due endpoint twice in the same day,
+            the second run should NOT create duplicate expenses.
+            Checking for an existing expense with the same recurring_expense_id
+            AND expense_date ensures idempotency.
+            [look up: idempotency in API design]
+
+
+    4d. Get the household member IDs from the included relation
+
+        const memberIds = bill.household.members.map((m) => m.user_id)
+
+        This gives you an array of BigInt user IDs — exactly what
+        CalculateEqualSplit expects as PayingUserIDs.
+
+
+    4e. Calculate the equal split
+
+        const splitRows = CalculateEqualSplit({
+            PayingUserIDs: memberIds,
+            ExcludedUserIDs: [],        (no exclusions for recurring bills)
+            Amount: Number(bill.amount) (bill.amount is a Decimal, convert to number)
+        })
+
+        splitRows will be an array of objects like:
+            { UserID: bigint, OptStatus: boolean, Amount: string }
+
+        [look up: Decimal to Number conversion in Prisma]
+
+
+    4f. Create the expense row
+
+        const expense = await tx.expenses.create({
+            data: {
+                description:          bill.description
+                expense_name:         bill.expense_name
+                expense_category_id:  bill.expense_category_id
+                recurring_expense_id: bill.id
+                household_id:         bill.household_id
+                split_type:           SplitType.Equal
+                amount:               Number(bill.amount)
+                expense_date:         bill.next_expense_date
+                creator_user_id:      bill.creator_user_id
+                payer_user_id:        bill.payer_user_id
+            }
+        })
+
+        NOTE: expense_date is set to bill.next_expense_date (the scheduled date),
+        NOT new Date() (today). The expense belongs to the date it was due.
+
+        [look up: Prisma create]
+
+
+    4g. Create the expense_splits rows
+
+        await tx.expense_splits.createMany({
+            data: splitRows.map((row) => ({
+                user_id:       row.UserID,
+                opted_out:     row.OptStatus,
+                amount_to_pay: row.Amount,
+                expense_id:    expense.id
+            }))
+        })
+
+        This is the same pattern your teammate uses in expenses/route.ts
+        to insert split rows after creating an expense.
+
+        [look up: Prisma createMany, Array.map()]
+
+
+    4h. Advance the bill's next_expense_date
+
+        const nextDate = addFrequency(bill.next_expense_date, bill.frequency)
+
+        await tx.recurring_expenses.update({
+            where: { id: bill.id },
+            data: { next_expense_date: nextDate }
+        })
+
+        This pushes the bill forward by one period (7 days for Weekly,
+        1 month for Monthly) so it won't be picked up again until then.
+
+        [look up: Prisma update]
+
+
+    4i. Record success
+
+        created_count++
+        push into details:
+            {
+                recurring_expense_id: bill.id.toString(),
+                expense_id: expense.id.toString(),
+                status: 'created'
+            }
+
+
+    --- END OF LOOP ---
+
+    4j. Return the results object from the transaction
+
+        return { created_count, skipped_count, details }
+
+    --- END OF TRANSACTION ---
+
+
+STEP 5: Return the response
+
+    return NextResponse.json(
+        { success: true, summary: JSONifyBigInt({ due_count, ...result }) },
+        { status: 200 }
+    )
+
+    The spread { due_count, ...result } merges due_count with the
+    created_count, skipped_count, and details from the transaction.
+    [look up: JavaScript spread operator]
+
+
+STEP 6: Catch block (outer try/catch)
+
+    catch (err) {
+        console.error('Error running due recurring bills: ', err)
+        return NextResponse.json(
+            { error: 'We encountered an error while running due recurring bills' },
+            { status: 500 }
+        )
+    }
+
+
+================================================================================
+  EXAMPLE RESPONSE (what the endpoint returns on success)
+================================================================================
+
+  {
+      "success": true,
+      "summary": {
+          "due_count": 3,
+          "created_count": 2,
+          "skipped_count": 1,
+          "details": [
+              { "recurring_expense_id": "10", "expense_id": "55", "status": "created" },
+              { "recurring_expense_id": "11", "expense_id": "56", "status": "created" },
+              { "recurring_expense_id": "12", "status": "skipped" }
+          ]
+      }
+  }
+
+
+================================================================================
+  THINGS TO LOOK UP IF STUCK
+================================================================================
+
+  - "Prisma interactive transactions" — how $transaction(async (tx) => ...) works
+  - "Prisma filter operators" — lte, gte for date/number filtering
+  - "Prisma nested include" — include a relation inside a relation
+  - "JavaScript for...of" — iterating over an array
+  - "JavaScript continue" — skip to next iteration in a loop
+  - "Idempotency" — why checking for duplicates before insert matters
+  - "Date.setDate / Date.setMonth" — how date arithmetic works in JS
+  - "Prisma Decimal to Number" — Number(decimalValue) conversion
+  - "Prisma createMany" — inserting multiple rows in one call
+  - "JavaScript spread operator" — { ...obj } to merge objects
+
+================================================================================
