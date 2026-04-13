@@ -1,4 +1,6 @@
-// https://stackoverflow.com/questions/75701346/how-to-sync-supabase-auth-users-with-a-custom-users-table-in-nextjs
+// Profile bootstrap endpoint — creates or updates the user's row in the users table.
+// Pattern referenced from Supabase Auth docs (auth.getUser) and Prisma docs (upsert).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'

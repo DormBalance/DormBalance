@@ -1,4 +1,6 @@
-// https://stackoverflow.com/questions/73502158/how-to-join-a-group-using-an-invite-code-with-prisma-nextjs
+// Joins the authenticated user to a household using an invite code.
+// Pattern referenced from Next.js docs (App Router API routes) and Prisma docs (findFirst, create).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'

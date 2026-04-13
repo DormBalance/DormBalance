@@ -1,4 +1,6 @@
-// https://stackoverflow.com/questions/75223154/how-to-list-members-of-a-group-with-role-based-access-in-nextjs-app-router
+// Returns all members of a household; only accessible to existing members.
+// Pattern referenced from Next.js docs (App Router API routes) and Prisma docs (findMany with include).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../../../lib/prisma'

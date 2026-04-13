@@ -1,4 +1,7 @@
-// https://stackoverflow.com/questions/72813062/create-a-group-with-invite-code-using-prisma-and-nextjs-api-routes
+// POST creates a new household and adds the creator as Admin in a single transaction.
+// GET returns all households the authenticated user belongs to.
+// Pattern referenced from Next.js docs (App Router API routes) and Prisma docs (transactions, relations).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
@@ -24,6 +27,7 @@ export async function POST(request: NextRequest) {
   if (!dbUser) return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
 
   try {
+    // crypto.randomUUID docs: https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID
     const invite_code = crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
 
     const household = await prisma.$transaction(async (tx) => {

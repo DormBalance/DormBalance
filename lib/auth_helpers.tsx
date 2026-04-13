@@ -1,4 +1,7 @@
-// https://stackoverflow.com/questions/76418913/how-to-protect-api-routes-in-nextjs-app-router-with-supabase-jwt
+// Shared auth/role helpers used across all API routes.
+// requireUser validates the Bearer token; requireMember/requireAdmin check household membership and role.
+// Pattern referenced from Supabase Auth docs (getUser with JWT) and Next.js docs (API route protection).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { type User } from '@supabase/supabase-js'
 import { type NextRequest } from 'next/server'

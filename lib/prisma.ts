@@ -1,4 +1,6 @@
-// https://stackoverflow.com/questions/71809050/how-to-avoid-multiple-prisma-client-instances-in-nextjs-hot-reload
+// Prisma client singleton to prevent multiple instances during Next.js hot reload in development.
+// Pattern referenced from Prisma docs (best practices for Next.js).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'

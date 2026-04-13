@@ -1,4 +1,7 @@
-// https://stackoverflow.com/questions/77002137/how-to-refresh-supabase-session-in-nextjs-app-router-middleware
+// Next.js middleware for Supabase session refresh and auth-based route protection.
+// Unauthenticated users are redirected to /auth/login; API and auth routes are exempt.
+// Pattern referenced from Supabase SSR docs (@supabase/ssr) and Next.js docs (middleware).
+// AI was used to speed up translating those docs into this boilerplate.
 // npm install @supabase/ssr
 
 import { createServerClient } from '@supabase/ssr'

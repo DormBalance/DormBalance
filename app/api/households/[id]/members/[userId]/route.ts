@@ -1,4 +1,7 @@
-// https://stackoverflow.com/questions/76001834/how-to-implement-role-change-and-member-removal-in-a-household-app-with-prisma
+// Admin-only endpoints for managing household members.
+// PATCH changes a member's role; DELETE removes them with a last-admin guard.
+// Pattern referenced from Next.js docs (dynamic route segments) and Prisma docs (update, delete, count).
+// AI was used to speed up translating those docs into this boilerplate.
 
 import { NextRequest, NextResponse } from 'next/server'
 import { HouseholdRole } from '@prisma/client'
@@ -85,6 +88,7 @@ export async function DELETE(
       where: { household_id: BigInt(id), role: 'Admin' },
     })
 
+    // an admin cannot be removed if they are the last admin in the household
     if (adminCount === 1 && membership.role === 'Admin') {
       return NextResponse.json({ error: 'Cannot remove the last admin' }, { status: 400 })
     }
