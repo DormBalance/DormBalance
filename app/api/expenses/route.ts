@@ -14,7 +14,7 @@ function JSONifyBigInt<T>(obj: T): T {
   );
 }
 
-interface CreateExpenseBody {
+type CreateExpenseBody = {
   expense_name: string;
   description?: string;
   household_id: string;
@@ -31,7 +31,7 @@ interface CreateExpenseBody {
     user_id: string;
     percent: number;
   }[];
-}
+};
 
 
 export async function POST(request: NextRequest) {
@@ -260,9 +260,9 @@ export async function POST(request: NextRequest) {
   );
 
   }
-    catch (err) {
+  catch (err) {
     console.error(`Error creating expense ${expense_name}: `, err);
-    return NextResponse.json({error: "We encountered an error while creating the expense"}, {status: 500});
+    return NextResponse.json({error: err instanceof Error ? err.message : "We encountered an error while creating the expense"}, {status: 500});
   }
 }
 
@@ -416,9 +416,11 @@ export async function GET(request: NextRequest) {
 
 
 catch (err) {
-    console.error("Error getting expense", err);
-    return NextResponse.json({error: "We encountered an error while creating the expense"}, {status: 500});
-  };
+  if (err instanceof Error && err.message === "Percents are invalid and do not sum up to 100")
+    return NextResponse.json({error: err.message}, {status: 400});
+  
+  return NextResponse.json({error: err instanceof Error ? err.message : "An unknown error occurred"}, {status: 500});
+};
 }
 
 
