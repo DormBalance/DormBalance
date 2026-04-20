@@ -170,7 +170,8 @@ export default function CreateExpenseModal({
                 creator_user_id: curUserID,
                 payer_user_id: payerUserId,
                 split_type: splitType,
-                expense_date: deadline,
+                next_expense_date: deadline,
+                frequency: paymentType,
                 description: description || ""
             };
         }
@@ -182,7 +183,7 @@ export default function CreateExpenseModal({
                 creator_user_id: curUserID,
                 payer_user_id: payerUserId,
                 split_type: splitType,
-                next_expense_date: deadline,
+                expense_date: deadline,
                 frequency: paymentType,
                 description: description || ""
             };
