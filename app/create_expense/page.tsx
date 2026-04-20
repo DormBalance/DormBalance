@@ -7,8 +7,8 @@ import '../../components/CreateExpenseModal.css';
 export default function Page() {
   const [isModalVisible, setIsModalVisible] = useState(true);
 
-  let curUserId = "10"; // Temp test id; REPLACE LATER
-  let curHouseholdID = "4"; // Temp test id; REPLACE LATER
+  let curUserId = "1"; // Temp test id; REPLACE LATER
+  let curHouseholdID = "1"; // Temp test id; REPLACE LATER
 
   return (
     <CreateExpenseModal

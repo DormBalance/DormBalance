@@ -5,7 +5,6 @@ import "./CreateExpenseModal.css";
 import SelectMembers from "./SelectMembers";
 import IconField from "./Field";
 import { ClipboardIcon, DollarIcon, PenIcon } from "./Icons";
-import { CreateRecurringBillBody } from "@/app/api/recurring_expenses/route";
 
 interface GUIElement {
     isOpen: boolean;
@@ -70,9 +69,14 @@ export default function CreateExpenseModal({
                 try {
                     const response = await fetch(`/api/household_members?userId=${curUserID}`);
                     const data = await response.json();
+                    if (data.error || !data.length) {
+                        setErrors(data.error);
+                        setLoading(false);
+                        return;
+                    }
                     const members = data;
                     setMembers(members);
-                    
+
                     if (members.length > 0)
                         setPayerUserId(members[0].id);
                 }
@@ -131,7 +135,7 @@ export default function CreateExpenseModal({
         }[];
     };
     
-    type CreateRecurringBillBody {
+    type CreateRecurringBillBody = {
         household_id: string;
         creator_user_id: string;
         payer_user_id: string;

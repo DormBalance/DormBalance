@@ -255,11 +255,12 @@ export async function POST(request: NextRequest) {
             const splitData = [];
             for(let i = 0; i < Rows.length; i++){
                 splitData.push({
-                user_id: Rows[i].UserID,
-                opted_out: Rows[i].OptStatus,
-                amount_to_pay: Rows[i].Amount,
-                recurring_expense_id: recurringExpense.id,
-            });
+                    user_id: Rows[i].UserID,
+                    opted_out: Rows[i].OptStatus,
+                    amount_to_pay: Rows[i].Amount,
+                    recurring_expense_id: recurringExpense.id,
+                })
+            };
 
             await tx.expense_splits.createMany({
                 data: splitData
