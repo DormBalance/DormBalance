@@ -20,7 +20,7 @@ export default function Topbar(){
 
                     <div className = "topbar-profile"> 
                         <div className = "topbar-profile-picture">GS</div>
-                        <span className = "topbar-name">Guillermo S.</span> //only 2 components that need to be changed once authentication is handled by AJ
+                        <span className = "topbar-name">Guillermo S.</span> {/*only 2 components that need to be changed once authentication is handled by AJ*/}
                         <ChevronDown size = {16} />
                 </div>
              </div>

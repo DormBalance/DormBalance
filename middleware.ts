@@ -4,7 +4,7 @@
 // AI was used to speed up translating those docs into this boilerplate.
 // npm install @supabase/ssr
 
-
+/*
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -50,7 +50,11 @@ export const config = {
   ],
 }
 
-/* Uncomment the below code if you want to test front end component and authentication is not set up yet. Just comment code above. This code below was made by AI and is temporary.
+
+Uncomment the below code if you want to test front end component and authentication is not set up yet. Just comment code above. This code below was made by AI and is temporary.
+
+*/
+
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -62,4 +66,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
-  */
+  

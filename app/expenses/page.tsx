@@ -7,7 +7,9 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { getExpenses } from "@/lib/api";
 import { GetExpenseResponse } from "@/types";
-import "./expenses.css"
+import {Search} from "lucide-react";
+import RecentExpensesCard from "@/components/RecentExpensesCard";
+import "./expenses.css";
 
 
 function formatDate(dateString: string): string{
@@ -47,17 +49,6 @@ function generateStatusText(expense: GetExpenseResponse, currentUser: string): s
         return `You owe ${formatCurrency(amountOwed)}`;
 }
 
-//this function was copy and paasted from RecentExpensesCard.tsx
-function determineStatusClass(status: string): string{
-    if (status.startsWith("You owe")){
-        return "status-owe";
-    } else if (status.includes("owes you")){
-        return "status-owed";
-    }
-    return "status-settled";
-}
-
-
 
 export default function ExpensesPage() {
     //copy and pasted from dashboar page
@@ -69,8 +60,8 @@ export default function ExpensesPage() {
     let [expenses, setExpenses] = useState<GetExpenseResponse[]>([]);
     let[loading, setLoading] = useState(true);
     let [error, setError] = useState("");
-    let[tab, setTab = useState("")];
-    let[search, setSearch = useState("")];
+    let[tab, setTab = useState<"all" | "mine">("all")];
+    let[search, setSearch] = useState("");
 
     async function loadExpenses(){
         if (!householdID) return;
@@ -92,7 +83,69 @@ export default function ExpensesPage() {
         loadExpenses();
     }, []);
 
-    let
+    let expensesFilteredByTab;
+    if (tab === "all"){
+        expensesFilteredByTab = expenses;
+    } else{
+        expensesFilteredByTab = expenses.filter((expense) =>
+            expense.payer_user_id === currUser || expense.splits.some((split) => split.user_id === currUser)
+        );
+    }
+
+    let searchExpense = expensesFilteredByTab.filter((expense) =>{
+        let expenseNameSearch = expense.expense_name.toLowerCase().includes(search.toLowerCase());
+        let expensePayerMatch =  `${expense.expense_payer.first_name} ${expense.expense_payer.last_name}`.toLowerCase().includes(search.toLowerCase());
+        return expenseNameSearch || expensePayerMatch;
+    });   
+
+    let allExpensesTabClass;
+    if(tab === "all"){
+        allExpensesTabClass = "active-expense-tab";
+    } else{
+        allExpensesTabClass = "expenses-tab";
+    }
+
+    let yourExpensesTabClass;
+    if(tab === "yours"){
+        yourExpensesTabClass = "active-expense-tab";
+    } else{
+        yourExpensesTabClass = "expenses-tab";
+    }
+
+    // lines 124 to 131 are copy and pasted from dashboard pages, with change to line 115 using searchExpense
+     let expenseRows = searchExpense.map((expense) =>({
+        id: Number(expense.id),
+        description: expense.expense_name,
+        paidBy: `${expense.expense_payer.first_name} ${expense.expense_payer.last_name}`,
+        date: formatDate(expense.expense_date),
+        total: formatCurrency(Number(expense.amount)),
+        status:generateStatusText(expense,currUser),
+    }))
+
+    return(
+        <DashboardLayout>
+            <div className = "expense-page-header">
+                <h1 className = "expense-page-title"> Expenses </h1>
+            </div>
+
+            <div className = "expense-page-controls">
+                <div className = "expense-page-tabs">
+                    <button className = {allExpensesTabClass} onClick = {() => setTab("all")}>All Household Expenses</button>
+                    <button className = {yourExpensesTabClass} onClick = {() => setTab("yours")}>Your Expenses</button>
+                </div>
+
+                <div className = "expense-page-search-bar">
+                    <Search size = {16}/>
+                    <input placeholder="Search expenses" value={search} onChange={(expense) => setSearch(expense.target.value)}/>
+                </div>
+            </div>
+            {error && <p style={{color: "red", marginBottom: 16}}>{error}</p>}
+            {loading && <p style={{color: "#888", marginBottomn: 16}}>Loading...</p>}
+
+            <RecentExpensesCard rows={expenseRows} maxRows={Infinity} viewAll={false} scrollable={true}/>
+
+        </DashboardLayout>
+    );
 }
 
 
