@@ -11,6 +11,7 @@ import {Search} from "lucide-react";
 import RecentExpensesCard from "@/components/RecentExpensesCard";
 import "../dashboard/dashboard.css";
 import "./expenses.css";
+import CreateExpenseModal from "@/components/CreateExpenseModal";
 
 
 function formatDate(dateString: string): string{
@@ -60,6 +61,7 @@ export default function ExpensesPage() {
     let [expenses, setExpenses] = useState<GetExpenseResponse[]>([]);
     let[loading, setLoading] = useState(true);
     let [error, setError] = useState("");
+    let [showCreateModal, setShowCreateModal] = useState(false);
     let[tab, setTab] = useState<"all" | "yours">("all");
     let[search, setSearch] = useState("");
 
@@ -126,7 +128,7 @@ export default function ExpensesPage() {
         <DashboardLayout>
             <div className = "expense-page-header">
                 <h1 className = "expense-page-title"> Expenses </h1>
-                <button className = "add-expense-btn">Add Expense </button>
+                <button className = "add-expense-btn" onClick={() => setShowCreateModal(true)}>Add Expense</button>
             </div>
 
             <div className = "expense-page-controls">
@@ -145,6 +147,13 @@ export default function ExpensesPage() {
 
             <RecentExpensesCard rows={expenseRows} maxRows={Infinity} viewAll={false} scrollable={true}/>
 
+            <CreateExpenseModal
+                isOpen         = {showCreateModal}
+                onClose        = {() => setShowCreateModal(false)}
+                onSuccess      = {loadExpenses}
+                curUserID      = {currUser}
+                curHouseholdID = {householdID}
+            />
         </DashboardLayout>
     );
 }
