@@ -4,56 +4,51 @@
 // AI was used to speed up translating those docs into this boilerplate.
 // npm install @supabase/ssr
 
-/*
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+// import { createServerClient } from '@supabase/ssr'
+// import { NextResponse, type NextRequest } from 'next/server'
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+// export async function middleware(request: NextRequest) {
+//   let supabaseResponse = NextResponse.next({ request })
 
-  const { data: { user } } = await supabase.auth.getUser()
+//   const supabase = createServerClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+//     {
+//       cookies: {
+//         getAll() {
+//           return request.cookies.getAll()
+//         },
+//         setAll(cookiesToSet) {
+//           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+//           supabaseResponse = NextResponse.next({ request })
+//           cookiesToSet.forEach(({ name, value, options }) =>
+//             supabaseResponse.cookies.set(name, value, options)
+//           )
+//         },
+//       },
+//     }
+//   )
 
-  const isApiRoute  = request.nextUrl.pathname.startsWith('/api')
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
+//   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user && !isApiRoute && !isAuthRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
-    return NextResponse.redirect(url)
-  }
+//   const isApiRoute  = request.nextUrl.pathname.startsWith('/api')
+//   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
 
-  return supabaseResponse
-}
+//   if (!user && !isApiRoute && !isAuthRoute) {
+//     const url = request.nextUrl.clone()
+//     url.pathname = '/auth/login'
+//     return NextResponse.redirect(url)
+//   }
 
-export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
-}
+//   return supabaseResponse
+// }
 
-
-Uncomment the below code if you want to test front end component and authentication is not set up yet. Just comment code above. This code below was made by AI and is temporary.
-
-*/
+// export const config = {
+//   matcher: [
+//     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+//   ],
+// }
 
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -66,4 +61,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
-  
