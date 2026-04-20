@@ -11,6 +11,9 @@ type ExpenseRow = {
 
 type RecentExpensesCardProps = {
     rows: ExpenseRow[];
+    viewAll?: boolean;
+    scrollable?: boolean;
+    maxRows?: number;
 }
 
 //this function was made with chat gpt
@@ -22,9 +25,11 @@ function determineStatusClass(status: string): string{
     }
     return "status-settled";
 }
-export default function RecentExpensesCard({rows,}: RecentExpensesCardProps) {
 
-    const visibleRows = rows.slice(0, 5);
+export default function RecentExpensesCard({rows, viewAll = true, scrollable = false, maxRows = 5, }: RecentExpensesCardProps){
+   
+    const visibleRows = maxRows === Infinity ? rows : rows.slice(0,maxRows);
+
     return (
         <section className = "recent-expenses-card">
             <div className = "recent-expenses-header">
@@ -40,7 +45,12 @@ export default function RecentExpensesCard({rows,}: RecentExpensesCardProps) {
                     <span>Status</span>
                 </div>
 
-                {visibleRows.map((row) => (
+                <div style={scrollable ? {maxHeight: "520px", overflowY: "auto"} : {}}> {/*lines 48 to 51 where autofilled with copilot and adjusted to fit look desires*/}
+                    {visibleRows.length === 0 ?(
+                        <div style={{padding: "40px", textAlign: "center", color: "#aaa", fontSize: "14px"}}> No Expenses </div>
+                    ): (
+
+                visibleRows.map((row) => (
                     <div className = "recent-expenses-row" key = {row.id}>
                         <span>{row.description}</span>
                         <span>{row.paidBy}</span>
@@ -48,16 +58,16 @@ export default function RecentExpensesCard({rows,}: RecentExpensesCardProps) {
                         <span>{row.total}</span>
                         <span className = {determineStatusClass(row.status)}>{row.status}</span>
                     </div>
-                ))}
+                ))
+            )}
             </div>
-
-            <div className = "recent-expenses-footer">
-                <Link href = "/expenses" className = "view-all-link">View All</Link>
             </div>
+            {
+                viewAll && (
+                    <div className = "recent-expenses-footer">
+                    <Link href = "/expenses" className = "view-all-link">View All</Link>
+            </div>
+                )}
         </section>
     );
 }
-
-
-
-
