@@ -9,6 +9,7 @@ import RecentExpensesCard from "@/components/RecentExpensesCard";
 import { getExpenses } from "@/lib/api";
 import { GetExpenseResponse } from "@/types";
 import "./dashboard.css";
+import CreateExpenseModal from "@/components/CreateExpenseModal";
 
 
 
@@ -76,6 +77,7 @@ export default function DashboardPage() {
     let [expenses, setExpenses] = useState<GetExpenseResponse[]>([]);
     let[loading, setLoading] = useState(true);
     let [error, setError] = useState("");
+    let [showCreateModal, setShowCreateModal] = useState(false);
 
     async function loadExpenses(){
         if (!householdID) return;
@@ -117,7 +119,7 @@ export default function DashboardPage() {
             <div className = "page-header">
                 <h1 className = "page-title">Gator Grove Apt 3B</h1>
                 <div className = "page-features">
-                    <button className = "add-expense-btn">Add Expense</button>
+                    <button className = "add-expense-btn" onClick={() => setShowCreateModal(true)}>Add Expense</button>
                     <button className = "settle-up-btn">Settle Up</button>
                 </div>
             </div>
@@ -129,6 +131,14 @@ export default function DashboardPage() {
             </div>
 
             <RecentExpensesCard rows = {expenseRows} />
+
+            <CreateExpenseModal
+                isOpen         = {showCreateModal}
+                onClose        = {() => setShowCreateModal(false)}
+                onSuccess      = {loadExpenses}
+                curUserID      = {currUser}
+                curHouseholdID = {householdID}
+            />
         </DashboardLayout>
     );
 }
