@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/app/auth/auth";
 import DashboardLayout from "@/components/DashboardLayout";
 import StatCard from "@/components/StatCard";
 import "../dashboard/dashboard.css";
@@ -32,16 +33,38 @@ type Balance = {
 
 
 export default function SettlementsPage() {
-    //const {user} = useAuth();
-        let householdID: string = "1"; //these are hardocded values based on values that are currently in table. can delete once we have authentication.
-        let currUser = "2";
-        //let householdID: string = user?.user_metadata?.household_id ?? "";
-        //let currUser = user?.id ?? "";
+        const { session, user } = useAuth();
+        let [householdID, setHouseholdID] = useState("");
+        let [currUser, setCurrUser] = useState("");
         let [balances, setBalance] = useState<Balance[]>([]);
         let[loading, setLoading] = useState(true);
         let [error, setError] = useState("");
-    
+
+        // Copied from dashboard/page.tsx pattern — fetches household and DB user ID via API
+        useEffect(() => {
+            if (!session?.access_token) return;
+            async function loadHousehold() {
+                const res = await fetch("/api/households", {
+                    headers: { "Authorization": `Bearer ${session.access_token}` },
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.length === 0) return;
+                const household = data[0];
+                setHouseholdID(String(household.id));
+                const membersRes = await fetch(`/api/households/${household.id}/members`, {
+                    headers: { "Authorization": `Bearer ${session.access_token}` },
+                });
+                if (!membersRes.ok) return;
+                const members = await membersRes.json();
+                const me = members.find((m: any) => m.email === user?.email);
+                if (me) setCurrUser(String(me.id));
+            }
+            loadHousehold();
+        }, [session]);
+
         async function loadExpenses(){
+            if (!householdID) return;
             setLoading(true);
             setError("");
             let balances = await fetch(`/api/balances?household_id=${householdID}`);
@@ -56,9 +79,9 @@ export default function SettlementsPage() {
             setBalance(balancesInfo.balances);
             setLoading(false);
         }
-         useEffect(() => {
+        useEffect(() => {
             loadExpenses();
-        }, []);
+        }, [householdID]);
 
         let whoYouOwe = balances.filter((balance) => balance.from === currUser);
         let whoOwesYou = balances.filter((balance) => balance.to === currUser);
