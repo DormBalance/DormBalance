@@ -1,7 +1,11 @@
+'use client';
 import {Home, List,  RefreshCcw, Handshake} from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/app/auth/auth";
 
 //Please reuse this file for the sidebar, which is for all pages. only part that has to be changed is div classname profile stuff once authentication is set up, currently its hardcoded
+//no more hardcoding for you mr monkey guillermo, you are so awesome and cute
+//i will come back to this and add first name last name, right now the authentication only fetches the email
 const navigationComponents = [
     {label: "Dashboard", href: "/dashboard", icon: <Home size={20} /> },
     {label: "Expenses", href: "/expenses", icon: <List size={20} />},
@@ -10,11 +14,19 @@ const navigationComponents = [
 ];
 
 export default function Sidebar() {
+    const { user } = useAuth();
+
+    if (!user) return null;
+
+    // still need to replace email-based with first_name/last_name from users table
+    const initials = user.email[0].toUpperCase();
+    const displayName = user.email;
+
     return (
         <aside className="sidebar">
             <nav className = "sidebar-navigation">
                 {navigationComponents.map((component) => (
-                    <Link key={component.label} href={component.href} className={component.active ? "sidebar-item active" : "sidebar-item"}>
+                    <Link key={component.label} href={component.href} className="sidebar-item">
                         <span className = "sidebar-item-icon">{component.icon}</span>
                         <span> {component.label}</span>
                     </Link>
@@ -22,10 +34,10 @@ export default function Sidebar() {
             </nav>
 
             <div className = "sidebar-profile">
-                <div className = "profile-picture">GS</div>
+                <div className = "profile-picture">{initials}</div>
                 <div className = "profile-info">
-                    <div className = "profile-name">Guillermo S.</div>
-                    <div className = "profile-email">example@ufl.edu</div>
+                    <div className = "profile-name">{displayName}</div>
+                    <div className = "profile-email">{user.email}</div>
                 </div>
             </div>
         </aside>
