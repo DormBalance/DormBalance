@@ -36,10 +36,7 @@ async function GetExpensesValid() {
     const start_date = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();// start 1 day ago
 
     let url = `${EXPENSES_URL}?household_id=${householdId}&start_date=${start_date}`;
-    const response = await fetch(url, {
-        method: "GET",
-        headers: { 'Content-Type': 'application/json' }
-    });
+    const response = await fetch(url, { method: "GET" });
 
     let expenses = await response.json();
     if (response.ok && expenses !== null) {
@@ -59,10 +56,7 @@ async function getExpenseInvalid() {
     const min_amount = 0;
     
     let url = `${EXPENSES_URL}?household_id=${householedId}&max_amount=${max_amount}&min_amount=${min_amount}`;
-    const response = await fetch(url, {
-        method: "GET",
-        headers: { 'Content-Type': 'application/json' },
-    });
+    const response = await fetch(url, { method: "GET" });
 
     if (!response.ok) {
         console.log("---------- TEST PASSED: GetExpenseInvalid ----------");
