@@ -8,6 +8,7 @@ import "../dashboard/dashboard.css";
 import "./settlements.css";
 import { GetSettlementResponse } from "@/types";
 import { getSettlements } from "@/lib/api";
+import CreateSettlementModal from "@/components/CreateSettlementModal"; // Copilot generated per Settle-Up button onClick
 
 
 function formatDate(dateString: string): string{
@@ -40,6 +41,7 @@ export default function SettlementsPage() {
         let [settlements, setSettlements] = useState<GetSettlementResponse[]>([]);
         let [loading, setLoading] = useState(true);
         let [error, setError] = useState("");
+        let [showSettleModal, setShowSettleModal] = useState(false); // Copilot generated per Settle-Up button onClick
 
         // Copied from dashboard/page.tsx pattern — fetches household and DB user ID via API
         useEffect(() => {
@@ -69,12 +71,6 @@ export default function SettlementsPage() {
             setLoading(true);
             setError("");
             let balances = await fetch(`/api/balances?household_id=${householdID}`);
-
-            if(!balances.ok){ //temporary debuging thing generasted by Claude, dont forget to delete
-                setError("failed to load settlementdata")
-                setLoading(false);
-                return;
-            }
 
             let balancesInfo = await balances.json();
             setBalance(balancesInfo.balances);
@@ -106,7 +102,7 @@ export default function SettlementsPage() {
             <div>
                 <div className = "settlement-page-header">
                     <h1 className = "settlement-page-title">Settlements</h1>
-                    <button className = "settle-btn">Settle-Up</button>
+                    <button className = "settle-btn" onClick={() => setShowSettleModal(true)}>Settle-Up</button> {/* Copilot generated per Settle-Up button onClick */}
                 </div>
             </div>
             {error && <p style = {{color: "red", marginBottom: 16}}>{error}</p>}
@@ -220,6 +216,13 @@ export default function SettlementsPage() {
                     ))
                 )}
             </div>
+            <CreateSettlementModal
+            isOpen         = {showSettleModal}
+            onClose        = {() => setShowSettleModal(false)}
+            onSuccess      = {() => { setShowSettleModal(false); loadExpenses(); }}
+            curUserID      = {currUser}
+            curHouseholdID = {householdID}
+        />
         </DashboardLayout>
     );
 }
