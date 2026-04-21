@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/auth/auth";
 import { supabase } from "@/lib/supabaseClient";
@@ -24,7 +24,7 @@ async function createProfile(token: string, firstName: string, lastName: string)
     });
 }
 
-export default function LoginPage() {
+function LoginForm() {
     const { signIn, signUp } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -158,5 +158,13 @@ export default function LoginPage() {
                 </p>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense>
+            <LoginForm />
+        </Suspense>
     );
 }
