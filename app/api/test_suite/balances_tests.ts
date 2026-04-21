@@ -35,3 +35,11 @@ async function GetBalancesInvalid() {
         console.log(`   Failed to retrieve balances for household ${householdId}.`);
     }
 }
+
+function runBalancesTests() {
+    console.log("Running Balances API Tests...");
+    GetBalancesValid();
+    GetBalancesInvalid();
+}
+
+runBalancesTests();
