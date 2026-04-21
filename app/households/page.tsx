@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/auth/auth";
 import "./households.css";
@@ -9,6 +9,18 @@ const CODE_LENGTH = 8;
 export default function HouseholdsPage() {
     const { session } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        if (!session?.access_token) return;
+        async function checkHousehold() {
+            const res = await fetch("/api/households", {
+                headers: { "Authorization": `Bearer ${session!.access_token}` },
+            });
+            const data = await res.json();
+            if (data.length > 0) router.replace("/dashboard");
+        }
+        checkHousehold();
+    }, [session]);
 
     const [isCreate, setIsCreate] = useState(false);
     const [codeChars, setCodeChars] = useState<string[]>(Array(CODE_LENGTH).fill(""));
