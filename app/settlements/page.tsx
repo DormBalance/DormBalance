@@ -35,13 +35,13 @@ type Balance = {
 
 export default function SettlementsPage() {
         const { session, user } = useAuth();
-        let [householdID, setHouseholdID] = useState("");
-        let [currUser, setCurrUser] = useState("");
+        let [householdID, setHouseholdID] = useState<string>("");
+        let [currUser, setCurrUser] = useState<string>("");
         let [balances, setBalance] = useState<Balance[]>([]);
         let [settlements, setSettlements] = useState<GetSettlementResponse[]>([]);
-        let [loading, setLoading] = useState(true);
-        let [error, setError] = useState("");
-        let [showSettleModal, setShowSettleModal] = useState(false); // Copilot generated per Settle-Up button onClick
+        let [loading, setLoading] = useState<boolean>(true);
+        let [error, setError] = useState<string>("");
+        let [showSettleModal, setShowSettleModal] = useState<boolean>(false); // Copilot generated per Settle-Up button onClick
 
         // Copied from dashboard/page.tsx pattern — fetches household and DB user ID via API
         useEffect(() => {
@@ -217,12 +217,12 @@ export default function SettlementsPage() {
                 )}
             </div>
             <CreateSettlementModal
-            isOpen         = {showSettleModal}
-            onClose        = {() => setShowSettleModal(false)}
-            onSuccess      = {() => { setShowSettleModal(false); loadExpenses(); }}
-            curUserID      = {currUser}
-            curHouseholdID = {householdID}
-        />
+                isOpen         = {showSettleModal}
+                onClose        = {() => setShowSettleModal(false)}
+                onSuccess      = {() => { setShowSettleModal(false); loadExpenses(); }}
+                curUserID      = {currUser}
+                curHouseholdID = {householdID}
+            />
         </DashboardLayout>
     );
 }

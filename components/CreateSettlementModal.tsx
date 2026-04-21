@@ -38,7 +38,6 @@ export default function CreateSettlementModal({
                 let data = await response.json();
 
                 if (data.error || !data.length) {
-                    setError("Could not load household members");
                     setLoading(false);
                     return;
                 }
@@ -86,6 +85,8 @@ export default function CreateSettlementModal({
         onSuccess();
         onClose();
     }
+
+    if (!isOpen) return null;
 
     return ( //partly copied from CreateExpenseModal
         <div className = "overlay">
