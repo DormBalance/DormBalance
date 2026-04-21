@@ -112,7 +112,7 @@ export async function DELETE(
     // https://supabase.com/docs/reference/javascript/auth-admin-listusers
     if (removedUser?.email) {
       const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
-      const authUser = users.find((u) => u.email === removedUser.email)
+      const authUser = users.find((u: any) => u.email === removedUser.email)
       if (authUser) await supabaseAdmin.auth.admin.signOut(authUser.id, 'global')
     }
 
